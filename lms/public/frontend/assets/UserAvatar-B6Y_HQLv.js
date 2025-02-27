@@ -1,0 +1,2 @@
+import{v as a,x as r,y as u,H as l,C as s,as as n,a0 as i,D as m}from"./frappe-ui-2-dobwEi.js";const f={__name:"UserAvatar",props:{user:{type:Object,default:null},size:{type:String}},setup(e){return(t,c)=>(r(),a(s(m),{text:e.user.full_name},{default:u(()=>[e.user?(r(),a(s(n),i({key:0,class:"avatar border border-outline-gray-2 cursor-auto",label:e.user.full_name,image:e.user.user_image,size:e.size},t.$attrs),null,16,["label","image","size"])):l("",!0)]),_:1},8,["text"]))}};export{f as _};
+//# sourceMappingURL=UserAvatar-B6Y_HQLv.js.map

@@ -1,0 +1,2 @@
+import{o as s,O as r}from"./index-Dg_4Jaqk.js";import{G as n,x as o,J as c,z as p,C as t,I as i}from"./frappe-ui-2-dobwEi.js";const l={class:"flex items-center text-ink-gray-7"},D={__name:"DateRange",props:{startDate:{type:String},endDate:{type:String}},setup(a){const e=a;return(m,_)=>(o(),n("div",l,[c(t(s),{class:"h-4 w-4 stroke-1.5 mr-2"}),p("span",null,i(t(r)(e.startDate,e.endDate)),1)]))}};export{D as _};
+//# sourceMappingURL=DateRange-t2dZCPMC.js.map
