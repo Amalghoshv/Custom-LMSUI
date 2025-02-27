@@ -8,9 +8,9 @@
 					<!-- <AppSidebar /> -->
 				</div>
 				<div class="w-full overflow-auto" id="scrollContainer">
-					<TopNav />
-					<MainNav  @search="handleSearch"/>
-					<Banner @select-category="handleCategorySelect"  :category="courseStore.currentCategory"/>
+					<TopNav v-if="!isLessonRoute"/>
+					<MainNav v-if="!isLessonRoute" @search="handleSearch"/>
+					<Banner v-if="!isLessonRoute" @select-category="handleCategorySelect"  :category="courseStore.currentCategory"/>
 					<slot />
 				</div>
 			</div>
@@ -24,7 +24,8 @@ import Banner from './Modals/Banner.vue'
 import MainNav from './Modals/MainNav.vue'
 import TopNav from './Modals/TopNav.vue'
 const courseStore = useCourseStore()
-import { watch,ref,provide } from 'vue'
+import { watch,ref,provide ,computed} from 'vue'
+import { useRoute } from 'vue-router';
 const searchQuery = ref('');
 const handleCategorySelect = (category) => {
     courseStore.setCategory(category)
@@ -36,7 +37,10 @@ provide('searchQuery', searchQuery);
 const props = defineProps({
   category: String,
 });
-
+const route = useRoute();
+const isLessonRoute = computed(() => {
+    return route.name === 'Lesson'; 
+});
 
 
 watch(() => props.category, (newCategory) => {

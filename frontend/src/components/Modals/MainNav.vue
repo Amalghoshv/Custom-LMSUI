@@ -1,7 +1,5 @@
 <template>
-
 	<nav class="main-nav">
-		<!-- Left Section: Logo and Links -->
 		<div class="nav-left">
 			<a href="https://learn.millioncoders.org/">
 				<img class="img-responsive logo_transparent_static visible"
@@ -9,7 +7,6 @@
 					style="width: 100px" alt="Million Coders" />
 			</a>
 
-			<!-- Dropdown Menu -->
 			<div class="dropdown-container">
 				<div class="dropdown-trigger" @mouseover="showDropdown = true" @mouseleave="showDropdown = false">
 					<Menu />
@@ -17,57 +14,10 @@
 				<div class="dropdown-menu" v-show="showDropdown" @mouseover="showDropdown = true"
 					@mouseleave="showDropdown = false">
 					<div class="dropdown-items">
-						<div class="dropdown-item">
-							<a href="https://learn.millioncoders.org/stm_lms_course_category/3d-animation/"
-								class="dropdown-link">
-								3D & Animation
-							</a>
-						</div>
-						<div class="dropdown-item">
-							<a href="https://learn.millioncoders.org/stm_lms_course_category/ai/" class="dropdown-link">
-								AI
-							</a>
-						</div>
-						<div class="dropdown-item">
-							<a href="https://learn.millioncoders.org/stm_lms_course_category/business/"
-								class="dropdown-link">
-								Business
-							</a>
-						</div>
-						<div class="dropdown-item">
-							<a href="https://learn.millioncoders.org/stm_lms_course_category/data-science/"
-								class="dropdown-link">
-								Data Science
-							</a>
-						</div>
-						<div class="dropdown-item">
-							<a href="https://learn.millioncoders.org/stm_lms_course_category/design/"
-								class="dropdown-link">
-								Design
-							</a>
-						</div>
-						<div class="dropdown-item">
-							<a href="https://learn.millioncoders.org/stm_lms_course_category/development/"
-								class="dropdown-link">
-								Development
-							</a>
-						</div>
-						<div class="dropdown-item">
-							<a href="https://learn.millioncoders.org/stm_lms_course_category/game-development/"
-								class="dropdown-link">
-								Game Development
-							</a>
-						</div>
-						<div class="dropdown-item">
-							<a href="https://learn.millioncoders.org/stm_lms_course_category/mobile-app-development/"
-								class="dropdown-link">
-								Mobile App Development
-							</a>
-						</div>
-						<div class="dropdown-item">
-							<a href="https://learn.millioncoders.org/stm_lms_course_category/web-development/"
-								class="dropdown-link">
-								Web Development
+						<div class="dropdown-item" v-for="(category, index) in categories.data" :key="index">
+							<a href="#" @click.prevent="selectCategory(category.value)"
+								:class="{ 'selected': route.query.category === category.value }">
+								{{ category.label }}
 							</a>
 						</div>
 					</div>
@@ -101,47 +51,60 @@
 			</div>
 		</div>
 
-		<!-- Right Section: User Greeting -->
 		<div class="nav-right">
-			<!-- User Dropdown Menu -->
 			<div class="user-menu">
-				<div class="user-greeting">
-					<button class="user-menu-button" @click="toggleDropdown">
-						<User class="user-icon" /> Hi, {{ userResource.data?.full_name }}
-						<ChevronDown class="dropdown-icon" />
-						
-					</button>
-			
-				</div>
+				<div v-if="isLoggedIn" ref="dropdownWrapper">
+					<div class="user-greeting">
+						<button class="user-menu-button" @click="toggleDropdown">
+							<User class="user-icon" /> Hi, {{ userResource.data?.full_name }}
+							<ChevronDown class="dropdown-icon" />
+						</button>
+					</div>
 
-				<div class="profile-dropdown-content profile-dropdown" id="learningAreaDropdown"
-					v-show="isDropdownOpen">
-					<div class="dropdown-heading">LEARNING AREA</div>
+					<div class="profile-dropdown-content profile-dropdown" id="learningAreaDropdown"
+						v-show="isDropdownOpen">
+						<div class="dropdown-heading">LEARNING AREA</div>
 						<ul class="profile-dropdown-items">
-						<li><a href="#" @click.prevent="handleEnrolledCoursesClick">Enrolled Courses</a></li>
-						<a href="#" @click.prevent="handleMessagesClick">Messages
-          </a>
-						<li><a href="#">Wishlist</a></li>
-						<li><a href="#">My Orders</a></li>
-						<li><a href="#">My Certificates</a></li>
-						<li><a href="#" @click.prevent="handleSettingsClick">Settings</a></li>
-						<li><a href="#">Memberships</a></li>
-						<li><a href="#">Enrolled Quizzes</a></li>
-						<li><a href="#">My Assignments</a></li>
-						<li><a href="#">My Points</a></li>
-						<li class="logout"><a href="#" @click.prevent="handleLogout">Logout</a></li>
-					</ul>
-					
+							<li>
+								<a href="#" @click.prevent="handleItemClick(handleEnrolledCoursesClick)">
+									Enrolled Courses
+								</a>
+							</li>
+							<li>
+								<a href="#" @click.prevent="handleItemClick(handleMessagesClick)">
+									Messages
+								</a>
+							</li>
+							<li><a href="#" @click.prevent="handleItemClick(() => { })">Wishlist</a></li>
+							<li><a href="#" @click.prevent="handleItemClick(() => { })">My Orders</a></li>
+							<li><a href="#" @click.prevent="handleItemClick(() => { })">My Certificates</a></li>
+							<li>
+								<a href="#" @click.prevent="handleItemClick(handleSettingsClick)">
+									Settings
+								</a>
+							</li>
+							<li><a href="#" @click.prevent="handleItemClick(() => { })">Memberships</a></li>
+							<li><a href="#" @click.prevent="handleItemClick(() => { })">Enrolled Quizzes</a></li>
+							<li><a href="#" @click.prevent="handleItemClick(() => { })">My Assignments</a></li>
+							<li><a href="#" @click.prevent="handleItemClick(() => { })">My Points</a></li>
+							<li class="logout">
+								<a href="#" @click.prevent="handleItemClick(handleLogout)">Logout</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+				<div v-else>
+					<button class="login-button" @click="redirectToLogin">
+						Login
+					</button>
 				</div>
 			</div>
-
-		
 			<div class="nav-icon-wrapper">
 				<Heart class="nav-icon" />
 			</div>
 
 			<div class="nav-icon-wrapper">
-				<Settings @click.prevent="handleSettingsClick"  class="nav-icon" />
+				<Settings @click.prevent="handleSettingsClick" class="nav-icon" />
 			</div>
 		</div>
 		<SettingsModal v-if="userResource.data?.is_moderator" v-model="showSettingsModal" />
@@ -150,12 +113,13 @@
 </template>
 
 <script setup>
-import { ref, watch,h } from 'vue'
-import { useRouter } from 'vue-router';
+import { ref, watch, h, defineEmits, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router';
 import { sessionStore } from '@/stores/session';
 import { usersStore } from '@/stores/user';
 import { useSettings } from '@/stores/settings';
-import { createResource } from 'frappe-ui'
+import { createResource } from 'frappe-ui';
+const route = useRoute();
 const router = useRouter();
 let unreadCount = ref(0);
 const { logout, isLoggedIn } = sessionStore();
@@ -174,29 +138,74 @@ import {
 	Search
 } from 'lucide-vue-next'
 
+const categories = createResource({
+	url: 'lms.lms.api.get_categories',
+	makeParams() {
+		return {
+			doctype: 'LMS Course',
+			filters: {
+				published: 1,
+			},
+		};
+	},
+	cache: ['courseCategories'],
+	auto: true,
+	transform(data) {
+		data.unshift({
+			label: 'All Categories',
+			value: null,
+		});
+		return data;
+	},
+});
+
+const selectCategory = (categoryValue) => {
+	const query = { ...route.query }; // 
+	if (categoryValue) {
+		query.category = categoryValue;
+		emit('select-category', category);
+	} else {
+		delete query.category;
+	}
+	router.push({ query });
+};
+
+const redirectToLogin = () => {
+	const redirectPath = router.currentRoute.value.fullPath;
+	router.push({ path: '/login', query: { redirect: redirectPath } });
+
+};
+
+watch(
+	() => route.query.category,
+	(newCategory) => {
+		console.log('Selected Category:', newCategory);
+	});
+
 const handleLogout = async () => {
-  try {
-    await logout.submit();
-    userResource.data = null;
-    router.push('/login');
-  } catch (error) {
-    console.error('Logout failed:', error);
-  }
+	try {
+		await logout.submit();
+		userResource.data = null;
+		isLoggedIn.value = false;
+		router.push('/login');
+	} catch (error) {
+		console.error('Logout failed:', error);
+	}
 };
 const handleSettingsClick = () => {
-  if (userResource.data?.username) {
-    router.push(`/user/${userResource.data.username}`);
-  } else {
-    console.error('Username not available');
-  }
+	if (userResource.data?.username) {
+		router.push(`/user/${userResource.data.username}`);
+	} else {
+		console.error('Username not available');
+	}
 };
 const handleEnrolledCoursesClick = () => {
-  router.push('/courses'); 
+	router.push('/courses');
 };
-import { defineEmits } from 'vue';
+
 
 const searchQuery = ref('');
-const emit = defineEmits(['search']);
+const emit = defineEmits(['search', 'select-category']);
 
 const handleSearchClick = () => {
 	if (searchQuery.value.trim()) {
@@ -221,30 +230,50 @@ const toggleDropdown = () => {
 	isDropdownOpen.value = !isDropdownOpen.value
 }
 const unreadNotifications = createResource({
-  cache: 'Unread Notifications Count',
-  url: 'frappe.client.get_count',
-  makeParams(values) {
-    return {
-      doctype: 'Notification Log',
-      filters: {
-        for_user: userResource.data?.name, 
-        read: 0,
-      },
-    };
-  },
-  onSuccess(data) {
-    unreadCount.value = data;
-  },
-  auto: userResource.data?.name ? true : false, 
+	cache: 'Unread Notifications Count',
+	url: 'frappe.client.get_count',
+	makeParams(values) {
+		return {
+			doctype: 'Notification Log',
+			filters: {
+				for_user: userResource.data?.name,
+				read: 0,
+			},
+		};
+	},
+	onSuccess(data) {
+		unreadCount.value = data;
+	},
+	auto: userResource.data?.name ? true : false,
 });
+
 const handleMessagesClick = () => {
-  unreadNotifications.fetch(); 
-  router.push('/notifications'); 
+	unreadNotifications.fetch();
+	router.push('/notifications');
 };
+
+const handleItemClick = (callback) => {
+	isDropdownOpen.value = false;
+	callback();
+};
+
+const closeDropdownOnClickOutside = (event) => {
+	const dropdownWrapper = document.querySelector('.user-menu');
+	if (dropdownWrapper && !dropdownWrapper.contains(event.target)) {
+		isDropdownOpen.value = false;
+	}
+};
+
+onMounted(() => {
+	document.addEventListener('click', closeDropdownOnClickOutside);
+});
+
+onUnmounted(() => {
+	document.removeEventListener('click', closeDropdownOnClickOutside);
+});
 </script>
 
 <style scoped>
-
 .main-nav {
 	display: flex;
 	justify-content: space-between;
@@ -315,10 +344,12 @@ textarea {
 	position: relative;
 	display: inline-block;
 }
+
 .dropdown-trigger {
 	cursor: pointer;
 	padding: 10px;
 }
+
 .dropdown-menu {
 	display: none;
 	position: absolute;
@@ -331,6 +362,13 @@ textarea {
 	min-width: 200px;
 	padding: 10px 0;
 }
+
+.selected {
+	font-weight: bold;
+	color: #e34d00;
+
+}
+
 .dropdown-items {
 	list-style: none;
 	margin: 0;
@@ -374,7 +412,6 @@ textarea {
 
 .autocomplete-input {
 	flex: 1;
-	/* Take up remaining space */
 	padding: 10px;
 	border: none;
 	outline: none;
@@ -465,14 +502,12 @@ textarea {
 .dropdown-content a {
 	padding: 10px 20px;
 	color: #000000;
-	/* Text color */
 	text-decoration: none;
 	transition: background-color 0.3s ease;
 }
 
 .dropdown-content a:hover {
 	background-color: #f0f2f5;
-	/* Light background on hover */
 }
 
 .nav-icon-wrapper {
@@ -486,7 +521,6 @@ textarea {
 
 .nav-icon-wrapper:hover {
 	background-color: #f0f2f5;
-	/* Light background on hover */
 	border-radius: 4px;
 }
 
@@ -494,10 +528,9 @@ textarea {
 	width: 20px;
 	height: 20px;
 	color: #000000;
-	/* Icon color */
+
 }
 
-/* Dropdown Container */
 .profile-dropdown-content {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
@@ -509,27 +542,25 @@ textarea {
 	max-width: 400px;
 	width: 387px;
 	position: absolute;
-	top: 108%; /* Position below the trigger */
-    left: -97px;
-  z-index: 1000; 
-	
+	top: 108%;
+	left: -97px;
+	z-index: 1000;
+
 }
 
-/* List Styling */
 .profile-dropdown-content ul {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 	display: contents;
-	/* Ensures <ul> doesn't interfere with grid layout */
+
 }
 
-/* List Items */
+
 .profile-dropdown-content li {
 	padding: 8px 12px;
 }
 
-/* Links */
 .profile-dropdown-content a {
 	text-decoration: none;
 	color: #333;
@@ -553,25 +584,43 @@ textarea {
 
 .logout a {
 	padding: 8px 12px;
-	
+
 }
+
 .dropdown-heading {
-  grid-column: span 2; 
-  font-weight: normal;
-  color: #333;
-  text-align: left; 
+	grid-column: span 2;
+	font-weight: normal;
+	color: #333;
+	text-align: left;
+}
+
+.login-button {
+	background-color: rgb(12, 5, 31) !important;
+	border-color: rgb(12, 5, 31) !important;
+	color: #fff;
+	border: none;
+	font-size: 1rem;
+	padding: 10px 30px;
+	border-radius: 20px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+	background-color: #f0f2f5;
 }
 
 .notification-badge {
-  display: inline-block;
-  background-color: #ffcc80; /* Light orange */
-  color: #333; /* Dark text for contrast */
-  font-size: 12px; /* Small font size */
-  font-weight: bold; /* Bold text */
-  padding: 2px 6px; /* Padding for size */
-  border-radius: 50%; /* Circular shape */
-  margin-left: 8px; /* Space between text and badge */
-  min-width: 20px; /* Ensure consistent size */
-  text-align: center; /* Center-align the number */
+	display: inline-block;
+	background-color: #ffcc80;
+	color: #333;
+	font-size: 12px;
+	font-weight: bold;
+	padding: 2px 6px;
+	border-radius: 50%;
+	margin-left: 8px;
+	min-width: 20px;
+	text-align: center;
 }
 </style>

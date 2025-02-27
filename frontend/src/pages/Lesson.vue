@@ -1,196 +1,242 @@
 <template>
-	<div v-if="lesson.data" class="">
-		<header
-			class="sticky top-0 z-10 flex items-center justify-between border-b bg-surface-white px-3 py-2.5 sm:px-5"
+	<div class="relative flex h-full flex-col">
+	  
+  <nav class="flex items-center justify-between px-4 py-3 bg-surface-white border-b">
+    <div class="flex items-center space-x-2">
+      <button
+        class="flex items-center p-2 bg-surface-gray-1 rounded shadow-md toggle-button"
+        @click="toggleSidebar"
+      >
+        <span v-if="isSidebarOpen">Close</span>
+        <span v-else>Open</span>
+        <svg
+          v-if="isSidebarOpen"
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-5 h-5 ml-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+        <svg
+          v-else
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-5 h-5 ml-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16m-7 6h7"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <Breadcrumbs class="h-7" :items="breadcrumbs" />
+  </nav>
+
+	  <!-- Main Layout -->
+	  <div class="flex h-screen text-base bg-surface-white">
+		<!-- Collapsible Sidebar -->
+		<aside
+		  v-if="isSidebarOpen"
+		  class="sidebar w-64 bg-surface-menu-bar border-r transition-transform duration-300 ease-in-out"
 		>
-			<Breadcrumbs class="h-7" :items="breadcrumbs" />
-		</header>
-		<div class="grid md:grid-cols-[70%,30%] h-screen">
-			<div
-				v-if="lesson.data.no_preview"
-				class="border-r text-center pt-10 px-5 md:px-0 pb-10"
-			>
-				<p class="mb-4">
-					{{
-						__(
-							'This lesson is not available for preview. Please enroll in the course to access it.'
-						)
-					}}
-				</p>
-				<Button v-if="user.data" @click="enrollStudent()" variant="solid">
-					{{ __('Start Learning') }}
-				</Button>
-				<Button v-else @click="redirectToLogin()">
-					{{ __('Login') }}
-				</Button>
+		  <div class="sticky top-10">
+			<div class="bg-surface-menu-bar py-5 px-2 border-b">
+			  <div class="text-lg font-semibold text-ink-gray-9">
+				{{ lesson.data.course_title }}
+			  </div>
+			  <div
+				v-if="user && lesson.data.membership"
+				class="text-sm mt-4 mb-2 text-ink-gray-5"
+			  >
+				{{ Math.ceil(lessonProgress) }}% {{ __('completed') }}
+			  </div>
+			  <ProgressBar
+				v-if="user && lesson.data.membership"
+				:progress="lessonProgress"
+			  />
 			</div>
-			<div v-else class="border-r container pt-5 pb-10 px-5">
-				<div class="flex flex-col md:flex-row md:items-center justify-between">
-					<div class="text-3xl font-semibold text-ink-gray-9">
-						{{ lesson.data.title }}
-					</div>
-					<div class="flex items-center mt-2 md:mt-0">
-						<router-link
-							v-if="lesson.data.prev"
-							:to="{
-								name: 'Lesson',
-								params: {
-									courseName: courseName,
-									chapterNumber: lesson.data.prev.split('.')[0],
-									lessonNumber: lesson.data.prev.split('.')[1],
-								},
-							}"
-						>
-							<Button class="mr-2">
-								<template #prefix>
-									<ChevronLeft class="w-4 h-4 stroke-1" />
-								</template>
-								<span>
-									{{ __('Previous') }}
-								</span>
-							</Button>
-						</router-link>
-						<router-link
-							v-if="allowEdit()"
-							:to="{
-								name: 'LessonForm',
-								params: {
-									courseName: courseName,
-									chapterNumber: props.chapterNumber,
-									lessonNumber: props.lessonNumber,
-								},
-							}"
-						>
-							<Button class="mr-2">
-								{{ __('Edit') }}
-							</Button>
-						</router-link>
-						<router-link
-							v-if="lesson.data.next"
-							:to="{
-								name: 'Lesson',
-								params: {
-									courseName: courseName,
-									chapterNumber: lesson.data.next.split('.')[0],
-									lessonNumber: lesson.data.next.split('.')[1],
-								},
-							}"
-						>
-							<Button>
-								<template #suffix>
-									<ChevronRight class="w-4 h-4 stroke-1" />
-								</template>
-								<span>
-									{{ __('Next') }}
-								</span>
-							</Button>
-						</router-link>
-						<router-link
-							v-else
-							:to="{
-								name: 'CourseDetail',
-								params: { courseName: courseName },
-							}"
-						>
-							<Button>
-								{{ __('Back to Course') }}
-							</Button>
-						</router-link>
-					</div>
-				</div>
-
-				<div class="flex items-center mt-2">
-					<span
-						class="h-6 mr-1"
-						:class="{
-							'avatar-group overlap': lesson.data.instructors?.length > 1,
-						}"
-					>
-						<UserAvatar
-							v-for="instructor in lesson.data.instructors"
-							:user="instructor"
-						/>
+			<CourseOutline
+			  :courseName="courseName"
+			  :key="chapterNumber"
+			  :getProgress="lesson.data.membership ? true : false"
+			/>
+		  </div>
+		</aside>
+  
+		<!-- Main Content -->
+		<main class="w-full overflow-auto" id="scrollContainer">
+		  <div v-if="lesson.data.no_preview" class="border-l text-center pt-10 px-5 md:px-0 pb-10">
+			<p class="mb-4">
+			  {{
+				__(
+				  'This lesson is not available for preview. Please enroll in the course to access it.'
+				)
+			  }}
+			</p>
+			<Button v-if="user.data" @click="enrollStudent()" variant="solid">
+			  {{ __('Start Learning') }}
+			</Button>
+			<Button v-else @click="redirectToLogin()">
+			  {{ __('Login') }}
+			</Button>
+		  </div>
+		  <div v-else class="border-l container pt-5 pb-10 px-5">
+			<div class="flex flex-col md:flex-row md:items-center justify-between">
+			  <div class="text-3xl font-semibold text-ink-gray-9">
+				{{ lesson.data.title }}
+			  </div>
+			  <div class="flex items-center mt-2 md:mt-0">
+				<router-link
+				  v-if="lesson.data.prev"
+				  :to="{
+					name: 'Lesson',
+					params: {
+					  courseName: courseName,
+					  chapterNumber: lesson.data.prev.split('.')[0],
+					  lessonNumber: lesson.data.prev.split('.')[1],
+					},
+				  }"
+				>
+				  <Button class="mr-2">
+					<template #prefix>
+					  <ChevronLeft class="w-4 h-4 stroke-1" />
+					</template>
+					<span>
+					  {{ __('Previous') }}
 					</span>
-					<CourseInstructors
-						v-if="lesson.data?.instructors"
-						:instructors="lesson.data.instructors"
-					/>
-				</div>
-				<div
-					v-if="
-						lesson.data.instructor_content &&
-						JSON.parse(lesson.data.instructor_content)?.blocks?.length > 1 &&
-						allowInstructorContent()
-					"
-					class="bg-surface-gray-2 p-3 rounded-md mt-6"
+				  </Button>
+				</router-link>
+				<router-link
+				  v-if="allowEdit()"
+				  :to="{
+					name: 'LessonForm',
+					params: {
+					  courseName: courseName,
+					  chapterNumber: props.chapterNumber,
+					  lessonNumber: props.lessonNumber,
+					},
+				  }"
 				>
-					<div class="text-ink-gray-5 font-medium">
-						{{ __('Instructor Notes') }}
-					</div>
-					<div
-						id="instructor-content"
-						class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal"
-					></div>
-				</div>
-				<div
-					v-else-if="lesson.data.instructor_notes"
-					class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-6"
+				  <Button class="mr-2">
+					{{ __('Edit') }}
+				  </Button>
+				</router-link>
+				<router-link
+				  v-if="lesson.data.next"
+				  :to="{
+					name: 'Lesson',
+					params: {
+					  courseName: courseName,
+					  chapterNumber: lesson.data.next.split('.')[0],
+					  lessonNumber: lesson.data.next.split('.')[1],
+					},
+				  }"
 				>
-					<LessonContent :content="lesson.data.instructor_notes" />
-				</div>
-				<div
-					v-if="lesson.data.content"
-					class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-5"
+				  <Button>
+					<template #suffix>
+					  <ChevronRight class="w-4 h-4 stroke-1" />
+					</template>
+					<span>
+					  {{ __('Next') }}
+					</span>
+				  </Button>
+				</router-link>
+				<router-link
+				  v-else
+				  :to="{
+					name: 'CourseDetail',
+					params: { courseName: courseName },
+				  }"
 				>
-					<div id="editor"></div>
-				</div>
-				<div
-					v-else
-					class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-5"
-				>
-					<LessonContent
-						v-if="lesson.data?.body"
-						:content="lesson.data.body"
-						:youtube="lesson.data.youtube"
-						:quizId="lesson.data.quiz_id"
-					/>
-				</div>
-				<div class="mt-20">
-					<Discussions
-						v-if="allowDiscussions"
-						:title="'Questions'"
-						:doctype="'Course Lesson'"
-						:docname="lesson.data.name"
-						:key="lesson.data.name"
-					/>
-				</div>
+				  <Button>
+					{{ __('Back to Course') }}
+				  </Button>
+				</router-link>
+			  </div>
 			</div>
-			<div class="sticky top-10">
-				<div class="bg-surface-menu-bar py-5 px-2 border-b">
-					<div class="text-lg font-semibold text-ink-gray-9">
-						{{ lesson.data.course_title }}
-					</div>
-					<div
-						v-if="user && lesson.data.membership"
-						class="text-sm mt-4 mb-2 text-ink-gray-5"
-					>
-						{{ Math.ceil(lessonProgress) }}% {{ __('completed') }}
-					</div>
-
-					<ProgressBar
-						v-if="user && lesson.data.membership"
-						:progress="lessonProgress"
-					/>
-				</div>
-				<CourseOutline
-					:courseName="courseName"
-					:key="chapterNumber"
-					:getProgress="lesson.data.membership ? true : false"
+			<div class="flex items-center mt-2">
+			  <span
+				class="h-6 mr-1"
+				:class="{
+				  'avatar-group overlap': lesson.data.instructors?.length > 1,
+				}"
+			  >
+				<UserAvatar
+				  v-for="instructor in lesson.data.instructors"
+				  :user="instructor"
 				/>
+			  </span>
+			  <CourseInstructors
+				v-if="lesson.data?.instructors"
+				:instructors="lesson.data.instructors"
+			  />
 			</div>
-		</div>
+			<div
+			  v-if="
+				lesson.data.instructor_content &&
+				JSON.parse(lesson.data.instructor_content)?.blocks?.length > 1 &&
+				allowInstructorContent()
+			  "
+			  class="bg-surface-gray-2 p-3 rounded-md mt-6"
+			>
+			  <div class="text-ink-gray-5 font-medium">
+				{{ __('Instructor Notes') }}
+			  </div>
+			  <div
+				id="instructor-content"
+				class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal"
+			  ></div>
+			</div>
+			<div
+			  v-else-if="lesson.data.instructor_notes"
+			  class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-6"
+			>
+			  <LessonContent :content="lesson.data.instructor_notes" />
+			</div>
+			<div
+			  v-if="lesson.data.content"
+			  class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-5"
+			>
+			  <div id="editor"></div>
+			</div>
+			<div
+			  v-else
+			  class="ProseMirror prose prose-table:table-fixed prose-td:p-2 prose-th:p-2 prose-td:border prose-th:border prose-td:border-outline-gray-2 prose-th:border-outline-gray-2 prose-td:relative prose-th:relative prose-th:bg-surface-gray-2 prose-sm max-w-none !whitespace-normal mt-5"
+			>
+			  <LessonContent
+				v-if="lesson.data?.body"
+				:content="lesson.data.body"
+				:youtube="lesson.data.youtube"
+				:quizId="lesson.data.quiz_id"
+			  />
+			</div>
+			<div class="mt-20">
+			  <Discussions
+				v-if="allowDiscussions"
+				:title="'Questions'"
+				:doctype="'Course Lesson'"
+				:docname="lesson.data.name"
+				:key="lesson.data.name"
+			  />
+			</div>
+		  </div>
+		</main>
+	  </div>
 	</div>
-</template>
+  </template>
 <script setup>
 import { createResource, Breadcrumbs, Button } from 'frappe-ui'
 import { computed, watch, inject, ref, onMounted, onBeforeUnmount } from 'vue'
@@ -204,7 +250,12 @@ import EditorJS from '@editorjs/editorjs'
 import LessonContent from '@/components/LessonContent.vue'
 import CourseInstructors from '@/components/CourseInstructors.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
+const isSidebarOpen = ref(true);
 
+// Toggle sidebar visibility
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
+};
 const user = inject('$user')
 const router = useRouter()
 const route = useRoute()
@@ -592,5 +643,64 @@ iframe {
 
 .tc-table {
 	border-left: 1px solid #e8e8eb;
+}
+
+
+.sidebar {
+  width: 400px; 
+  background-color: #f9fafb; 
+  border-right: 1px solid #e5e7eb; 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 40; 
+  transition: 2s ease-in-out;
+}
+
+.transition-transform {
+  transform: translateX(0);
+}
+
+.transition-transform.collapsed {
+  transform: translateX(-100%);
+}
+
+.fixed {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+}
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background-color: #ffffff; 
+  border-bottom: 1px solid #e5e7eb; 
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6; 
+  color: #374151; 
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-button:hover {
+  background-color: #e5e7eb; 
+}
+
+span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937; 
 }
 </style>
