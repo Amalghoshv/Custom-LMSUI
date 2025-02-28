@@ -41,12 +41,12 @@
 			<!-- Navigation Links -->
 			<div class="nav-links">
 				<div class="nav-link-item">
-					<Megaphone /><a href="/instructor" class="nav-link">
+					<Megaphone /><a href="/instructor" class="nav-link nav-link-text">
 						Become an Instructor</a>
 				</div>
 				<div class="nav-link-item">
 					<BriefcaseBusiness />
-					<a href="/enterprise" class="nav-link">For Enterprise</a>
+					<a href="/enterprise" class="nav-link nav-link-text">For Enterprise</a>
 				</div>
 			</div>
 		</div>
@@ -56,7 +56,7 @@
 				<div v-if="isLoggedIn" ref="dropdownWrapper">
 					<div class="user-greeting">
 						<button class="user-menu-button" @click="toggleDropdown">
-							<User class="user-icon" /> Hi, {{ userResource.data?.full_name }}
+							<User class="user-icon" /> <span>Hi, {{ userResource.data?.full_name }}</span>
 							<ChevronDown class="dropdown-icon" />
 						</button>
 					</div>
@@ -315,6 +315,7 @@ onUnmounted(() => {
 	display: flex;
 	align-items: center;
 	width: 180px;
+	
 }
 
 .nav-link:hover {
@@ -609,6 +610,32 @@ textarea {
 
 .login-button:hover {
 	background-color: #f0f2f5;
+}
+
+@media (max-width: 1024px) {
+  .nav-link-text {
+    display: none; 
+  }
+  .nav-link-item{
+	justify-content: center;
+	width:35px
+  }
+}
+
+@media (max-width: 980px) {
+  .user-menu-button {
+    display: flex;
+    align-items: center;
+    gap: 0; 
+  }
+
+  .user-menu-button span {
+    display: none; 
+  }
+
+  .dropdown-icon {
+    display: none; 
+  }
 }
 
 .notification-badge {
