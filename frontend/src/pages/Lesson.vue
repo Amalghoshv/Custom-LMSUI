@@ -114,45 +114,47 @@
 					</div>
 				</div>
 
-				<footer class="sticky-footer">
-					<div class="footer-content">
-						<div class="flex items-center justify-between w-full">
-							<router-link v-if="lesson.data.prev" :to="{
+				<div class="bottom-navbar border-t py-3 px-4 bg-white"    :style="{
+					width: isSidebarOpen ? 'calc(100% - 18rem)' : '100%',
+					left: isSidebarOpen ? '18rem' : '0',
+					transition: 'left 0.3s ease, width 0.3s ease'
+			   }">
+					<div class="flex items-center justify-between w-full">
+						<router-link v-if="lesson.data.prev" :to="{
+							name: 'Lesson',
+							params: {
+								courseName: courseName,
+								chapterNumber: lesson.data.prev.split('.')[0],
+								lessonNumber: lesson.data.prev.split('.')[1],
+							},
+						}">
+							<Button>
+								<template #prefix>
+									<ChevronLeft class="w-4 h-4 stroke-1" />
+								</template>
+								<span>{{ __('Previous') }}</span>
+							</Button>
+						</router-link>
+						<div v-else></div>
+						<div class="flex ">
+							<router-link v-if="lesson.data.next" :to="{
 								name: 'Lesson',
 								params: {
 									courseName: courseName,
-									chapterNumber: lesson.data.prev.split('.')[0],
-									lessonNumber: lesson.data.prev.split('.')[1],
+									chapterNumber: lesson.data.next.split('.')[0],
+									lessonNumber: lesson.data.next.split('.')[1],
 								},
 							}">
 								<Button>
-									<template #prefix>
-										<ChevronLeft class="w-4 h-4 stroke-1" />
+									<span>{{ __('Next') }}</span>
+									<template #suffix>
+										<ChevronRight class="w-4 h-4 stroke-1" />
 									</template>
-									<span>{{ __('Previous') }}</span>
 								</Button>
 							</router-link>
-							<div v-else></div>
-							<div class="flex ">
-								<router-link v-if="lesson.data.next" :to="{
-									name: 'Lesson',
-									params: {
-										courseName: courseName,
-										chapterNumber: lesson.data.next.split('.')[0],
-										lessonNumber: lesson.data.next.split('.')[1],
-									},
-								}">
-									<Button>
-										<span>{{ __('Next') }}</span>
-										<template #suffix>
-											<ChevronRight class="w-4 h-4 stroke-1" />
-										</template>
-									</Button>
-								</router-link>
-							</div>
 						</div>
 					</div>
-				</footer>
+				</div>
 			</main>
 		</div>
 	</div>
@@ -397,30 +399,19 @@ const pageMeta = computed(() => {
 updateDocumentTitle(pageMeta)
 </script>
 <style>
-.sticky-footer {
-	position: sticky;
-	bottom: 0;
-	background-color: #e3f2fd;
-	padding: 10px 20px;
-	box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
-	border-top: 1px solid #c5cae9;
-	width: 100%;
-	z-index: 1000;
-	margin-left: auto;
+
+.bottom-navbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-top: 1px solid #e5e7eb;
+  padding: 0.75rem 1.1rem;
+  background-color: white;
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  transition: width 0.3s ease, left 0.3s ease;
 }
-
-.footer-content {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	height: 25px;
-}
-
-
-.footer-content>div:first-child {
-	flex: 1;
-}
-
 
 .avatar-group {
 	display: inline-flex;
@@ -647,6 +638,5 @@ nav {
 span {
 	font-size: 0.9rem;
 	font-weight: 600;
-	color: #1f2937;
 }
 </style>
