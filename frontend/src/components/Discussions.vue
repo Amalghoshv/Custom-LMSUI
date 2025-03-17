@@ -44,9 +44,9 @@
 		v-else
 		class="flex flex-col items-center justify-center border-2 border-dashed mt-5 py-8 rounded-md"
 	>
-		<MessageSquareText class="w-7 h-7 text-ink-gray-4 stroke-1.5 mr-2" />
+		<MessageSquareText class="w-7 h-7  stroke-1.5 mr-2"  style="color: darkorange;"/>
 		<div class="">
-			<div v-if="emptyStateTitle" class="font-medium mb-2">
+			<div v-if="emptyStateTitle" class="font-medium mb-2" >
 				{{ __(emptyStateTitle) }}
 			</div>
 			<div class="text-ink-gray-5">

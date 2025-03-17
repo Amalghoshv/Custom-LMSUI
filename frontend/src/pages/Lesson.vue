@@ -1,7 +1,6 @@
 <template>
 	<div class="relative flex h-full flex-col">
-
-		<nav class="flex items-center justify-between px-4 py-3 border-b" style="background-color: #eef1f7">
+		<nav class="flex items-center justify-between px-4 py-3 border-b" style="background-color: #eef1f7;height: 50px;">
 			<div class="flex items-center space-x-2">
 				<router-link :to="{ name: 'CourseDetail', params: { courseName: courseName } }" class="back-button">
 					<button class="flex items-center p-2 bg-surface-gray-1 rounded shadow-md">
@@ -29,6 +28,11 @@
 			</div>
 
 			<Breadcrumbs class="h-7" :items="breadcrumbs" />
+			<div class="discussion-button">
+				<button @click="toggleDiscussions">
+					<MessagesSquare />Discussions
+				</button>
+			</div>
 		</nav>
 
 		<!-- Main Layout -->
@@ -52,8 +56,8 @@
 			</aside>
 
 			<!-- Main Content -->
-			<main class="w-full overflow-auto" id="scrollContainer" style="background-color: #fff;">
-				<div v-if="lesson.data.no_preview" class="border-l text-center pt-10 px-5 md:px-0 pb-10">
+			<main class="w-full  overflow-auto" id="scrollContainer" style="background-color: #fff;" :class="{ 'extra-padding': !isSidebarOpen && !isDiscussionSidebarOpen }">
+				<div v-if="lesson.data.no_preview" class="border-l text-center pt-10  md:px-0 pb-10" >
 					<p class="mb-4">
 						{{
 							__(
@@ -108,17 +112,11 @@
 						<LessonContent v-if="lesson.data?.body" :content="lesson.data.body"
 							:youtube="lesson.data.youtube" :quizId="lesson.data.quiz_id" />
 					</div>
-					<div class="mt-20">
-						<Discussions v-if="allowDiscussions" :title="'Questions'" :doctype="'Course Lesson'"
-							:docname="lesson.data.name" :key="lesson.data.name" />
-					</div>
-				</div>
-
-				<div class="bottom-navbar border-t py-3 px-4 bg-white"    :style="{
-					width: isSidebarOpen ? 'calc(100% - 18rem)' : '100%',
-					left: isSidebarOpen ? '18rem' : '0',
+                   <!-- bottom navbar -->
+					<div v-if="lesson.data" class="bottom-navbar border-t py-3 px-4 bg-white" :style="{
+					width:' 100%',
 					transition: 'left 0.3s ease, width 0.3s ease'
-			   }">
+				   }">
 					<div class="flex items-center justify-between w-full">
 						<router-link v-if="lesson.data.prev" :to="{
 							name: 'Lesson',
@@ -155,7 +153,18 @@
 						</div>
 					</div>
 				</div>
+					
+				</div>
 			</main>
+			<aside v-if="isDiscussionSidebarOpen"
+				class="sidebar w-64 bg-surface-menu-bar border-r transition-transform duration-300 ease-in-out">
+				<div class="sticky top-10">
+					<div class="bg-surface-menu-bar py-5 px-2 border-b">
+						<Discussions :title="'Questions'" :doctype="'Course Lesson'" :docname="lesson.data.name"
+							:key="lesson.data.name" />
+					</div>
+				</div>
+			</aside>
 		</div>
 	</div>
 </template>
@@ -165,22 +174,32 @@ import { computed, watch, inject, ref, onMounted, onBeforeUnmount } from 'vue'
 import CourseOutline from '@/components/CourseOutline.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, MessagesSquare } from 'lucide-vue-next'
 import Discussions from '@/components/Discussions.vue'
 import { getEditorTools, updateDocumentTitle } from '../utils'
 import EditorJS from '@editorjs/editorjs'
 import LessonContent from '@/components/LessonContent.vue'
 import CourseInstructors from '@/components/CourseInstructors.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
-const isSidebarOpen = ref(true);
+const isSidebarOpen = ref(false);
 
 const toggleSidebar = () => {
 	isSidebarOpen.value = !isSidebarOpen.value;
+	isDiscussionSidebarOpen.value = false;
 };
+const isDiscussionSidebarOpen = ref(false);
+
+const toggleDiscussions = () => {
+	isDiscussionSidebarOpen.value = !isDiscussionSidebarOpen.value;
+	isSidebarOpen.value = false; 
+};
+
+
+const allowDiscussions = computed(() => !!props.lesson?.data?.name)
 const user = inject('$user')
 const router = useRouter()
 const route = useRoute()
-const allowDiscussions = ref(false)
+// const allowDiscussions = ref(false)
 const editor = ref(null)
 const instructorEditor = ref(null)
 const lessonProgress = ref(0)
@@ -198,6 +217,10 @@ const props = defineProps({
 	},
 	lessonNumber: {
 		type: String,
+		required: true,
+	},
+	lesson: {
+		type: Object,
 		required: true,
 	},
 })
@@ -385,6 +408,8 @@ const enrollStudent = () => {
 	)
 }
 
+
+
 const redirectToLogin = () => {
 	window.location.href = `/login?redirect-to=/lms/courses/${props.courseName}`
 }
@@ -399,19 +424,24 @@ const pageMeta = computed(() => {
 updateDocumentTitle(pageMeta)
 </script>
 <style>
-
-.bottom-navbar {
-  position: fixed;
+.bottom-navbar{
+	display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 50px;
+  background: #fff;
+  border-top: 1px solid #dbe0e9;
+  position: sticky;
+  z-index: 7;
   bottom: 0;
   left: 0;
-  right: 0;
-  border-top: 1px solid #e5e7eb;
-  padding: 0.75rem 1.1rem;
-  background-color: white;
-  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  transition: width 0.3s ease, left 0.3s ease;
+  margin-top: auto;
+
 }
+.extra-padding {
+	padding: 50px 200px !important;
+}
+
 
 .avatar-group {
 	display: inline-flex;
@@ -582,7 +612,7 @@ iframe {
 
 
 .sidebar {
-	width: 400px;
+	width: 30rem;
 	background-color: #f9fafb;
 	border-right: 1px solid #e5e7eb;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -601,7 +631,7 @@ iframe {
 .fixed {
 	position: fixed;
 	top: 1rem;
-	left: 1rem;
+	left: -8rem;
 }
 
 
@@ -638,5 +668,40 @@ nav {
 span {
 	font-size: 0.9rem;
 	font-weight: 600;
+}
+
+.discussion-button {
+	margin-right: 10px;
+}
+
+.discussion-button button {
+	color: black;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 50px;
+	padding: 0 20px 0 15px;
+	border-left: 1px solid gray;
+	;
+	cursor: pointer;
+}
+
+
+
+.sidebar-right button:hover {
+	background-color: #ff7875;
+}
+
+
+/* Overflow Handling */
+.overflow-hidden {
+	overflow: hidden;
+}
+
+
+
+.sidebar.open {
+	transform: translateX(0);
+	/* Slide into view */
 }
 </style>
