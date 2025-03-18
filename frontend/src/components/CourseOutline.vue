@@ -96,6 +96,7 @@ import { Button, createResource, Tooltip } from 'frappe-ui'
 import { getCurrentInstance, inject, ref } from 'vue'
 import Draggable from 'vuedraggable'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
+
 import {
 	Check,
 	ChevronRight,

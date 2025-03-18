@@ -13,7 +13,16 @@
       <div v-if="!course.data.image" class="image-placeholder">
         {{ course.data.title?.[0] || 'C' }}
       </div>
+	 
     </div>
+	<div style="padding: 15px 30px; background-color: rgba(227, 77, 0, 0.1);margin:20px 0px;border-radius: 80px;">
+		<h6 style="text-align: center;
+  padding: 5px;">Score: {{ Math.ceil(courseProgress) }}% </h6>
+		<ProgressBar v-if="user && course.data.membership" :progress="courseProgress" />
+
+	</div>
+	
+
 		<div class="p-5">
 			<div v-if="course.data.price" class="text-2xl font-semibold mb-3">
 				{{ course.data.price }}
@@ -30,6 +39,7 @@
 						: 1,
 				},
 			}">
+			
 				<Button variant="solid" size="lg" class="w-full orange-btn">
 					<span>
 						{{ __('Continue Learning') }}
@@ -168,18 +178,25 @@
 
 <script setup>
 import { BookOpen, Users, Star, Clock7, Video, SquareCheckBig, Rows3 } from 'lucide-vue-next'
-import { computed, inject } from 'vue'
+import { computed, inject ,ref} from 'vue'
 import { Button, createResource } from 'frappe-ui'
 import { showToast, formatAmount } from '@/utils/'
+import ProgressBar from './ProgressBar.vue'
+
 import { capture } from '@/telemetry'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const user = inject('$user')
 
+
 const props = defineProps({
 	course: {
 		type: Object,
 		default: null,
+	},
+	lesson: {
+		type: Object,
+		required: true,
 	},
 })
 
@@ -241,6 +258,7 @@ const is_instructor = () => {
 	return user_is_instructor
 }
 
+
 const canGetCertificate = computed(() => {
 	if (
 		props.course.data?.enable_certification &&
@@ -273,6 +291,10 @@ const fetchCertificate = () => {
 		member: user.data?.name,
 	})
 }
+
+const courseProgress = computed(() => {
+  return props.course?.data?.membership?.progress || 0;
+});
 </script>
 
 <style scoped>

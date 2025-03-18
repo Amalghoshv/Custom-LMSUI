@@ -61,6 +61,7 @@
 									>
 										<UserAvatar
 											v-for="instructor in course.data.instructors"
+											:key="instructor"
 											:user="instructor"
 										/>
 									</span>
@@ -136,6 +137,8 @@
 								size="lg"
 								class="mr-2 text-ink-gray-9"
 								v-for="tag in course.data.tags"
+								:key="tag"
+								
 							>
 								{{ tag }}
 							</Badge>
@@ -170,7 +173,7 @@
 		</div>
 
 		<div class="w-[60%] m-8 border shadow-md">
-			<div class="flex border-b">
+			<div class="flex border-b mt-3">
 				<button
 					v-for="tab in tabs"
 					:key="tab.label"
@@ -193,8 +196,8 @@
                         style="color: #4d5e6f;font-family: 'Open Sans', serif;font-size: 16px;"
 					></div>
 					<div v-show="activeTab === 'Curriculum'">
-						<div class="mt-10">
-							<CourseOutline
+						<div class="mt-2">
+							<CourseOutlineDetail
 								:title="__('Course Outline')"
 								:courseName="course.data.name"
 								:showOutline="true"
@@ -211,8 +214,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
-    <footer class="bg-[#273144] text-white flex flex-col items-center">
+		<footer class="bg-[#273144] text-white flex flex-col items-center">
         <div class="max-w-7xl w-full p-10 grid grid-cols-3 gap-10">
             <div>
                 <h2 class="font-semibold mb-2">ABOUT</h2>
@@ -235,13 +237,15 @@
             </div>
         </div>
     </footer>
+	</div>
 </template>
+
 <script setup>
 import { createResource, Breadcrumbs, Badge, Tooltip } from 'frappe-ui'
 import { computed, reactive, defineComponent, ref } from 'vue'
 import { Users, Star } from 'lucide-vue-next'
 import CourseCardOverlay from '@/components/CourseCardOverlay.vue'
-import CourseOutline from '@/components/CourseOutline.vue'
+import CourseOutlineDetail from '@/components/CourseOutlineDetail.vue'
 import CourseReviews from '@/components/CourseReviews.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { updateDocumentTitle } from '@/utils'
