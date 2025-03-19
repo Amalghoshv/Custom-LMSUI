@@ -3,29 +3,25 @@
 		<div
 			class="bg-surface-blue-2 space-y-1 py-2 px-2 mb-4 rounded-md text-sm text-ink-blue-800"
 		>
-			<div class="leading-5">
-				{{
-					__('This quiz consists of {0} questions.').format(questions.length)
-				}}
-			</div>
+			
 			<div v-if="quiz.data?.duration" class="leading-5">
 				{{
 					__(
-						'Please ensure that you complete all the questions in {0} minutes.'
+						'Please ensure that you complete all the questions in {0} minutes.',
 					).format(quiz.data.duration)
 				}}
 			</div>
 			<div v-if="quiz.data?.duration" class="leading-5">
 				{{
 					__(
-						'If you fail to do so, the quiz will be automatically submitted when the timer ends.'
+						'If you fail to do so, the quiz will be automatically submitted when the timer ends.',
 					)
 				}}
 			</div>
 			<div v-if="quiz.data.passing_percentage" class="leading-relaxed">
 				{{
 					__(
-						'You will have to get {0}% correct answers in order to pass the quiz.'
+						'You will have to get {0}% correct answers in order to pass the quiz.',
 					).format(quiz.data.passing_percentage)
 				}}
 			</div>
@@ -34,7 +30,7 @@
 					__('You can attempt this quiz {0}.').format(
 						quiz.data.max_attempts == 1
 							? '1 time'
-							: `${quiz.data.max_attempts} times`
+							: `${quiz.data.max_attempts} times`,
 					)
 				}}
 			</div>
@@ -50,27 +46,70 @@
 			<ProgressBar :progress="timerProgress" />
 		</div>
 
-		<div v-if="activeQuestion == 0">
-			<div class="border text-center p-20 rounded-md">
-				<div class="font-semibold text-lg">
+		<div v-if="activeQuestion == 0" style="text-align: left">
+			<div class="border p-20 rounded-md">
+				<span style="display: flex; text-align: left;font-weight: initial;color: #4d5e6f;
+               }">Quiz</span>
+				<div
+					class="font-semibold text-lg quiz-heading"
+					style="
+						font-size: 30px;
+						font-style: normal;
+						font-weight: 700;
+						line-height: 35px;
+						color: #001931;
+						margin: 0;
+						padding: 0;
+						justify-content: left;
+						display: flex;
+						
+					"
+				>
 					{{ quiz.data.title }}
 				</div>
+				<div
+					style="display: flex;
+                    align-items: center;
+                    justify-content: left;
+					margin: 2rem 0;
+                }
+"
+				>
+					<CircleHelp style="stroke: orangered;"/>Questions count:{{ questions.length }}
+				</div>
 				<Button
+					style="
+						background-color: rgba(227, 77, 0, 1);
+						height: 40px;
+						padding: 0 20px;
+						display: flex;
+						justify-content: center;
+						align-items: center;
+						outline: 0;
+						border: none;
+						min-height: auto;
+						border-radius: 5px;
+						transition: 0.2s;
+						text-decoration: none;
+						caret-color: transparent;
+						box-shadow: none;
+						color: #fff;
+					"
 					v-if="
 						!quiz.data.max_attempts ||
 						attempts.data?.length < quiz.data.max_attempts
 					"
 					@click="startQuiz"
-					class="mt-2"
+					class="mt-2 text-left"
 				>
 					<span>
-						{{ __('Start') }}
+						{{ __('Start Quiz') }}
 					</span>
 				</Button>
 				<div v-else>
 					{{
 						__(
-							'You have already exceeded the maximum number of attempts allowed for this quiz.'
+							'You have already exceeded the maximum number of attempts allowed for this quiz.',
 						)
 					}}
 				</div>
@@ -189,7 +228,7 @@
 							{{
 								__('Question {0} of {1}').format(
 									activeQuestion,
-									questions.length
+									questions.length,
 								)
 							}}
 						</div>
@@ -207,7 +246,7 @@
 						</Button>
 						<Button
 							v-else-if="activeQuestion != questions.length"
-							@click="nextQuetion()"
+							@click="nextQuestion()"
 						>
 							<span>
 								{{ __('Next') }}
@@ -229,18 +268,18 @@
 			<div v-if="quizSubmission.data.is_open_ended">
 				{{
 					__(
-						"Your submission has been successfully saved. The instructor will review and grade it shortly, and you'll be notified of your final result."
+						'Your submission has been successfully saved. The instructor will review and grade it shortly and you will be notified of your final result.',
 					)
 				}}
 			</div>
 			<div v-else>
 				{{
 					__(
-						'You got {0}% correct answers with a score of {1} out of {2}'
+						'You got {0}% correct answers with a score of {1} out of {2}',
 					).format(
 						Math.ceil(quizSubmission.data.percentage),
 						quizSubmission.data.score,
-						quizSubmission.data.score_out_of
+						quizSubmission.data.score_out_of,
 					)
 				}}
 			</div>
@@ -258,14 +297,22 @@
 			</Button>
 		</div>
 		<div
-			v-if="quiz.data.show_submission_history && attempts?.data"
+			v-if="
+				quiz.data.show_submission_history &&
+				attempts?.data &&
+				attempts.data.length > 0
+			"
 			class="mt-10"
 		>
 			<ListView
 				:columns="getSubmissionColumns()"
 				:rows="attempts?.data"
 				row-key="name"
-				:options="{ selectable: false, showTooltip: false }"
+				:options="{
+					selectable: false,
+					showTooltip: false,
+					emptyState: { title: __('No Quiz submissions found') },
+				}"
 			>
 			</ListView>
 		</div>
@@ -282,8 +329,8 @@ import {
 	FormControl,
 } from 'frappe-ui'
 import { ref, watch, reactive, inject, computed } from 'vue'
-import { createToast } from '@/utils/'
-import { CheckCircle, XCircle, MinusCircle } from 'lucide-vue-next'
+import { createToast, showToast } from '@/utils/'
+import { CheckCircle, XCircle, MinusCircle, CircleHelp } from 'lucide-vue-next'
 import { timeAgo } from '@/utils'
 import { useRouter } from 'vue-router'
 import ProgressBar from '@/components/ProgressBar.vue'
@@ -414,7 +461,7 @@ watch(
 			attempts.reload()
 			resetQuiz()
 		}
-	}
+	},
 )
 
 const quizSubmission = createResource({
@@ -449,7 +496,7 @@ watch(
 		if (newName) {
 			quiz.reload()
 		}
-	}
+	},
 )
 
 const startQuiz = () => {
@@ -536,7 +583,7 @@ const addToLocalStorage = () => {
 	localStorage.setItem(quiz.data.title, JSON.stringify(quizData))
 }
 
-const nextQuetion = () => {
+const nextQuestion = () => {
 	if (!quiz.data.show_answers && questionDetails.data?.type != 'Open Ended') {
 		checkAnswer()
 	} else {
@@ -574,7 +621,17 @@ const createSubmission = () => {
 				if (quiz.data && quiz.data.max_attempts) attempts.reload()
 				if (quiz.data.duration) clearInterval(timerInterval)
 			},
-		}
+			onError(err) {
+				const errorTitle = err?.message || ''
+				if (errorTitle.includes('MaximumAttemptsExceededError')) {
+					const errorMessage = err.messages?.[0] || err
+					showToast(__('Error'), __(errorMessage), 'x')
+					setTimeout(() => {
+						window.location.reload()
+					}, 3000)
+				}
+			},
+		},
 	)
 }
 
