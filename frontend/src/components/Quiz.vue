@@ -1,8 +1,6 @@
 <template>
 	<div v-if="quiz.data">
-		<div
-			class="bg-surface-blue-2 space-y-1 py-2 px-2 mb-4 rounded-md text-sm text-ink-blue-2"
-		>
+		<div class="bg-surface-blue-2 space-y-1 py-2 px-2 mb-4 rounded-md text-sm text-ink-blue-2">
 			<div class="leading-5">
 				{{
 					__('This quiz consists of {0} questions.').format(questions.length)
@@ -50,7 +48,7 @@
 			<ProgressBar :progress="timerProgress" />
 		</div>
 
-		<div v-if="!quizStarted" >
+		<div v-if="!quizStarted">
 			<div class="border text-center p-20 rounded-md">
 				<div class="quiz-heading">
 					{{ quiz.data.title }}
@@ -63,14 +61,10 @@
 ">
 					<CircleHelp style="stroke: orangered;" />Questions count:{{ questions.length }}
 				</div>
-				<Button
-					v-if="
-						!quiz.data.max_attempts ||
-						attempts.data?.length < quiz.data.max_attempts
-					"
-					@click="startQuiz"
-					class="mt-2 start-quiz-btn"
-				>
+				<Button v-if="
+					!quiz.data.max_attempts ||
+					attempts.data?.length < quiz.data.max_attempts
+				" @click="startQuiz" class="mt-2 start-quiz-btn">
 					<span>
 						{{ __('Start') }}
 					</span>
@@ -238,7 +232,7 @@
         
         <!-- Submit button at bottom -->
         <div class="flex justify-end mt-6">
-            <Button @click="submitQuiz">
+            <Button @click="autoCheckAndSubmit">
                 <span>
                     {{ __('Submit Quiz') }}
                 </span>
@@ -250,16 +244,14 @@
 			<div class="text-lg font-semibold text-ink-gray-9">
 				{{ __('Quiz Summary') }}
 			</div>
-			<div
-				v-if="quizSubmission.data.is_open_ended"
-				class="leading-5 text-ink-gray-7"
-			>
+			<div v-if="quizSubmission.data.is_open_ended" class="leading-5 text-ink-gray-7">
 				{{
 					__(
-						"Your submission has been successfully saved. The instructor will review and grade it shortly, and you'll be notified of your final result."
+						"Your submission has been successfully saved. The instructor will review and grade it shortly, and you will be notified of your final result."
 					)
 				}}
 			</div>
+			
 			<div v-else>
 				{{
 					__(
@@ -271,37 +263,25 @@
 					)
 				}}
 			</div>
-			<Button
-				@click="resetQuiz()"
-				class="mt-2"
-				v-if="
-					!quiz.data.max_attempts ||
-					attempts?.data.length < quiz.data.max_attempts
-				"
-			>
+			<Button @click="resetQuiz()" class="mt-2" v-if="
+				!quiz.data.max_attempts ||
+				attempts?.data.length < quiz.data.max_attempts
+			">
 				<span>
 					{{ __('Try Again') }}
 				</span>
 			</Button>
 		</div>
-		<div
-			v-if="
-				quiz.data.show_submission_history &&
-				attempts?.data &&
-				attempts.data.length > 0
-			"
-			class="mt-10"
-		>
-			<ListView
-				:columns="getSubmissionColumns()"
-				:rows="attempts?.data"
-				row-key="name"
-				:options="{
-					selectable: false,
-					showTooltip: false,
-					emptyState: { title: __('No Quiz submissions found') },
-				}"
-			>
+		<div v-if="
+			quiz.data.show_submission_history &&
+			attempts?.data &&
+			attempts.data.length > 0
+		" class="mt-10">
+			<ListView :columns="getSubmissionColumns()" :rows="attempts?.data" row-key="name" :options="{
+				selectable: false,
+				showTooltip: false,
+				emptyState: { title: __('No Quiz submissions found') },
+			}">
 			</ListView>
 		</div>
 	</div>
@@ -318,7 +298,7 @@ import {
 } from 'frappe-ui'
 import { ref, watch, reactive, inject, computed, onMounted } from 'vue'
 import { createToast, showToast } from '@/utils/'
-import { CheckCircle, XCircle, MinusCircle, CircleHelp} from 'lucide-vue-next'
+import { CheckCircle, XCircle, MinusCircle, CircleHelp } from 'lucide-vue-next'
 import { timeAgo } from '@/utils'
 import { useRouter } from 'vue-router'
 import ProgressBar from '@/components/ProgressBar.vue'
@@ -341,6 +321,30 @@ const props = defineProps({
 		required: true,
 	},
 })
+
+  
+const autoCheckAndSubmit = () => {
+  try {
+    // First check if all questions have been checked
+    for (let qtidx = 0; qtidx < questions.length; qtidx++) {
+      const question = questions[qtidx];
+      if (
+        questionDetailsMap[question.question]?.type !== 'Open Ended' && 
+        !showAnswersMap[question.question] &&
+        selectedOptionsMap[question.question] // Only check if an answer is selected
+      ) {
+        checkAnswer(qtidx);
+      }
+    }
+    
+    // Then submit the quiz
+    submitQuiz();
+  } catch (error) {
+    console.error("Error during auto-check and submit:", error);
+    // Optional: Show error notification to user
+  }
+}
+
 
 const quiz = createResource({
 	url: 'frappe.client.get',
@@ -407,7 +411,7 @@ const timerProgress = computed(() => {
 const shuffleArray = (array) => {
 	for (let i = array.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1))
-		;[array[i], array[j]] = [array[j], array[i]]
+			;[array[i], array[j]] = [array[j], array[i]]
 	}
 	return array
 }
@@ -483,7 +487,7 @@ const startQuiz = () => {
 	quizStarted.value = true;
 	localStorage.removeItem(quiz.data.title);
 	if (quiz.data.duration) startTimer();
-	
+
 	// Load all question details at once
 	questions.forEach(q => {
 		getQuestionDetails(q.question);
@@ -499,11 +503,11 @@ const scrollToQuestion = (idx) => {
 
 const markAnswer = (qtidx, index) => {
 	const questionName = questions[qtidx].question;
-	
+
 	if (!questionDetailsMap[questionName].multiple) {
 		selectedOptionsMap[questionName] = [0, 0, 0, 0];
 	}
-	
+
 	selectedOptionsMap[questionName][index - 1] = selectedOptionsMap[questionName][index - 1] ? 0 : 1;
 	questionAnswered[qtidx] = true;
 }
@@ -527,7 +531,7 @@ const getAnswers = (questionName) => {
 const checkAnswer = (qtidx) => {
 	const questionName = questions[qtidx].question;
 	let answers = getAnswers(questionName);
-	
+
 	if (!answers.length) {
 		createToast({
 			title: 'Please select an option',
@@ -552,7 +556,7 @@ const checkAnswer = (qtidx) => {
 				if (!showAnswersMap[questionName]) {
 					showAnswersMap[questionName] = [];
 				}
-				
+
 				selectedOptionsMap[questionName].forEach((option, index) => {
 					if (option) {
 						showAnswersMap[questionName][index] = option && data[index];
@@ -580,7 +584,7 @@ const addToLocalStorage = (questionName) => {
 			return answer != undefined;
 		}),
 	};
-	
+
 	// Remove existing entry for this question if any
 	quizData = quizData.filter(item => item.question_name !== questionName);
 	quizData.push(questionData);
@@ -591,7 +595,7 @@ const submitQuiz = () => {
 	// Process all questions that haven't been checked yet
 	questions.forEach((question, idx) => {
 		const questionName = question.question;
-		
+
 		if (!showAnswersMap[questionName] && questionDetailsMap[questionName]) {
 			if (questionDetailsMap[questionName].type == 'Open Ended') {
 				if (userAnswers[questionName]) {
@@ -620,7 +624,7 @@ const submitQuiz = () => {
 			}
 		}
 	});
-	
+
 	// Submit all the answers
 	createSubmission();
 }
